@@ -1,6 +1,6 @@
 # This file is part of the REMOTE API
 # 
-# Copyright 2006-2015 Coppelia Robotics GmbH. All rights reserved. 
+# Copyright 2006-2016 Coppelia Robotics GmbH. All rights reserved. 
 # marc@coppeliarobotics.com
 # www.coppeliarobotics.com
 # 
@@ -24,7 +24,7 @@
 # along with the REMOTE API.  If not, see <http://www.gnu.org/licenses/>.
 # -------------------------------------------------------------------
 #
-# This file was automatically created for V-REP release V3.2.2 Rev1 on September 5th 2015
+# This file was automatically created for V-REP release V3.3.2 on August 29th 2016
 
 import platform
 import struct
@@ -105,6 +105,7 @@ c_SetFloatingParameter      = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct
 c_GetStringParameter        = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.POINTER(ct.POINTER(ct.c_char)), ct.c_int32)(("simxGetStringParameter", libsimx))
 c_GetCollisionHandle        = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.c_int32), ct.c_int32)(("simxGetCollisionHandle", libsimx))
 c_GetDistanceHandle         = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.c_int32), ct.c_int32)(("simxGetDistanceHandle", libsimx))
+c_GetCollectionHandle       = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.c_int32), ct.c_int32)(("simxGetCollectionHandle", libsimx))
 c_ReadCollision             = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.POINTER(ct.c_ubyte), ct.c_int32)(("simxReadCollision", libsimx))
 c_ReadDistance              = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.POINTER(ct.c_float), ct.c_int32)(("simxReadDistance", libsimx))
 c_RemoveObject              = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.c_int32)(("simxRemoveObject", libsimx))
@@ -156,6 +157,7 @@ c_CreateDummy               = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_float, ct
 c_Query                     = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.c_ubyte), ct.c_int32, ct.POINTER(ct.c_char), ct.POINTER(ct.POINTER(ct.c_ubyte)), ct.POINTER(ct.c_int32), ct.c_int32)(("simxQuery", libsimx))
 c_GetObjectGroupData        = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.c_int32, ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_int32)), ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_int32)), ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_float)), ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_char)), ct.c_int32)(("simxGetObjectGroupData", libsimx))
 c_GetObjectVelocity         = ct.CFUNCTYPE(ct.c_int32,ct.c_int32, ct.c_int32, ct.POINTER(ct.c_float), ct.POINTER(ct.c_float), ct.c_int32)(("simxGetObjectVelocity", libsimx))
+c_CallScriptFunction        = ct.CFUNCTYPE(ct.c_int32,ct.c_int32,ct.POINTER(ct.c_char),ct.c_int32,ct.POINTER(ct.c_char),ct.c_int32,ct.POINTER(ct.c_int32),ct.c_int32,ct.POINTER(ct.c_float),ct.c_int32,ct.POINTER(ct.c_char),ct.c_int32,ct.POINTER(ct.c_ubyte),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_int32)),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_float)),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_char)),ct.POINTER(ct.c_int32), ct.POINTER(ct.POINTER(ct.c_ubyte)),ct.c_int32)(("simxCallScriptFunction", libsimx))
 
 #API functions
 def simxGetJointPosition(clientID, jointHandle, operationMode):
@@ -238,11 +240,11 @@ def simxReadForceSensor(clientID, forceSensorHandle, operationMode):
     arr2 = []
     for i in range(3):
         arr2.append(torqueVector[i])
-    if sys.version_info[0] == 3:
-        state=state.value
-    else:
-        state=ord(state.value)
-    return ret, state, arr1, arr2 
+    #if sys.version_info[0] == 3:
+    #    state=state.value
+    #else:
+    #    state=ord(state.value)
+    return ret, state.value, arr1, arr2 
 
 def simxBreakForceSensor(clientID, forceSensorHandle, operationMode):
     '''
@@ -711,6 +713,16 @@ def simxGetCollisionHandle(clientID, collisionObjectName, operationMode):
         collisionObjectName=collisionObjectName.encode('utf-8')
     return c_GetCollisionHandle(clientID, collisionObjectName, ct.byref(handle), operationMode), handle.value
 
+def simxGetCollectionHandle(clientID, collectionName, operationMode):
+    '''
+    Please have a look at the function description/documentation in the V-REP user manual
+    '''
+
+    handle = ct.c_int()
+    if (sys.version_info[0] == 3) and (type(collectionName) is str):
+        collectionName=collectionName.encode('utf-8')
+    return c_GetCollectionHandle(clientID, collectionName, ct.byref(handle), operationMode), handle.value
+
 def simxGetDistanceHandle(clientID, distanceObjectName, operationMode):
     '''
     Please have a look at the function description/documentation in the V-REP user manual
@@ -848,6 +860,7 @@ def simxCopyPasteObjects(clientID, objectHandles, operationMode):
     Please have a look at the function description/documentation in the V-REP user manual
     '''
     c_objectHandles  = (ct.c_int*len(objectHandles))(*objectHandles)
+    c_objectHandles = ct.cast(c_objectHandles,ct.POINTER(ct.c_int)) # IronPython needs this
     newObjectCount   = ct.c_int()
     newObjectHandles = ct.POINTER(ct.c_int)()
     ret = c_CopyPasteObjects(clientID, c_objectHandles, len(objectHandles), ct.byref(newObjectHandles), ct.byref(newObjectCount), operationMode)
@@ -1320,6 +1333,87 @@ def simxGetObjectGroupData(clientID, objectType, dataType, operationMode):
             stringData.append(a)
  
     return ret, handles, intData, floatData, stringData
+
+def simxCallScriptFunction(clientID, scriptDescription, options, functionName, inputInts, inputFloats, inputStrings, inputBuffer, operationMode):
+    '''
+    Please have a look at the function description/documentation in the V-REP user manual
+    '''
+
+    inputBufferV=inputBuffer
+    if sys.version_info[0] == 3:
+        if type(scriptDescription) is str:
+            scriptDescription=scriptDescription.encode('utf-8')
+        if type(functionName) is str:
+            functionName=functionName.encode('utf-8')
+        if type(inputBuffer) is bytearray:
+            inputBufferV  = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
+        if type(inputBuffer) is str:
+            inputBuffer=inputBuffer.encode('utf-8')
+            inputBufferV  = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
+    else:
+        if type(inputBuffer) is bytearray:
+            inputBufferV = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
+        if type(inputBuffer) is str:
+            inputBuffer=bytearray(inputBuffer)
+            inputBufferV = (ct.c_ubyte*len(inputBuffer))(*inputBuffer)
+    inputBufferV=ct.cast(inputBufferV,ct.POINTER(ct.c_ubyte)) # IronPython needs this
+
+    c_inInts  = (ct.c_int*len(inputInts))(*inputInts)
+    c_inInts = ct.cast(c_inInts,ct.POINTER(ct.c_int)) # IronPython needs this
+    c_inFloats  = (ct.c_float*len(inputFloats))(*inputFloats)
+    c_inFloats = ct.cast(c_inFloats,ct.POINTER(ct.c_float)) # IronPython needs this
+
+    concatStr=''.encode('utf-8')
+    for i in range(len(inputStrings)):
+        a=inputStrings[i]
+        a=a+'\0'
+        if type(a) is str:
+            a=a.encode('utf-8')
+        concatStr=concatStr+a
+    c_inStrings  = (ct.c_char*len(concatStr))(*concatStr)
+
+    intDataOut =[]
+    floatDataOut =[]
+    stringDataOut =[]
+    bufferOut =bytearray()
+
+    intDataC = ct.c_int()
+    intDataP = ct.POINTER(ct.c_int)()
+    floatDataC = ct.c_int()
+    floatDataP = ct.POINTER(ct.c_float)()
+    stringDataC = ct.c_int()
+    stringDataP = ct.POINTER(ct.c_char)()
+    bufferS = ct.c_int()
+    bufferP = ct.POINTER(ct.c_ubyte)()
+
+    ret = c_CallScriptFunction(clientID,scriptDescription,options,functionName,len(inputInts),c_inInts,len(inputFloats),c_inFloats,len(inputStrings),c_inStrings,len(inputBuffer),inputBufferV,ct.byref(intDataC),ct.byref(intDataP),ct.byref(floatDataC),ct.byref(floatDataP),ct.byref(stringDataC),ct.byref(stringDataP),ct.byref(bufferS),ct.byref(bufferP),operationMode)
+
+    if ret == 0:
+        for i in range(intDataC.value):
+            intDataOut.append(intDataP[i])
+        for i in range(floatDataC.value):
+            floatDataOut.append(floatDataP[i])
+        s = 0
+        for i in range(stringDataC.value):
+            a = bytearray()
+            while stringDataP[s] != b'\0':
+                if sys.version_info[0] == 3:
+                    a.append(int.from_bytes(stringDataP[s],'big'))
+                else:
+                    a.append(stringDataP[s])
+                s += 1
+            s += 1 #skip null
+            if sys.version_info[0] == 3:
+                a=str(a,'utf-8')
+            else:
+                a=str(a)
+            stringDataOut.append(a)
+        for i in range(bufferS.value):
+            bufferOut.append(bufferP[i])
+    if sys.version_info[0] != 3:
+        bufferOut=str(bufferOut)
+
+    return ret, intDataOut, floatDataOut, stringDataOut, bufferOut
 
 def simxGetObjectVelocity(clientID, objectHandle, operationMode):
     '''

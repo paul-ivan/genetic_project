@@ -14,3 +14,8 @@ wrist = ml.getHandle("WristMotor")
 elbow = ml.getHandle("ElbowMotor")
 shoulder = ml.getHandle("Shoulder")
 robot = ml.getHandle("2W1A")
+
+for i in range(0, NB_ROBOTS):
+    wrist, elbow, shoulder = coyRobot(robot)
+
+print("starting")
