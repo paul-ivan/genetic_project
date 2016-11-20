@@ -1,5 +1,5 @@
-import  math, random, time
 import vrep
+import  math, random, time
 
 def loadScene():
     vrep.simxCloseScene(0, vrep.simx_opmode_oneshot)
@@ -10,10 +10,10 @@ def loadScene():
 
 def getPosition(roboth):
     ret, robotPos = vrep.simxGetObjectPosition(0, roboth, -1, vrep.simx_opmode_blocking)           
-    return robotPos
+    return [round(robotPos[0], 4), round(robotPos[1], 4), round(robotPos[2], 4)]
 
 def setPosition(roboth, pos):
-    vrep.simxSetObjectPosition(0, roboth, -1,pos,  vrep.simx_opmode_streaming)           
+    vrep.simxSetObjectPosition(0, roboth, -1,pos,  vrep.simx_opmode_oneshot_wait)           
 
 def setRotation(handle, angle):
     pass
@@ -26,29 +26,32 @@ def connect():
     print("connected")
 
 def startSimulation():
-    if vrep.simxStartSimulation(0, one_shot) < 0:
+    if vrep.simxStartSimulation(0, vrep.simx_opmode_oneshot_wait) < 0:
         raise Exception("cant start simumation")
+    print("SIMULATION STARTED")
 
 def stopSimulation():
-    vrep.simxStopSimulation(0, vrep.simx_opmode_oneshot)
+    vrep.simxStopSimulation(0, vrep.simx_opmode_oneshot_wait)
+    time.sleep(1)
     
 def animate(robot):
     pass
 
 def getHandle(name):
-    ret, item = vrep.simxGetObjectHandle(0, name, vrep.simx_opmode_blocking)
+    ret, item = vrep.simxGetObjectHandle(0, name, vrep.simx_opmode_oneshot_wait)
 
-    if ret < 0:
+    if ret !=0:
         raise Exception("cant retrive item" + str(name))
     return item
 
 def copyRobot(id_robot, num):
     ret, item = vrep.simxCopyPasteObjects(0, [id_robot], vrep.simx_opmode_blocking)
-    print(item)
+    print(num)
     wrist = getHandle("WristMotor#" + str(num)) 
     elbow = getHandle("ElbowMotor#" + str(num))
     shoulder = getHandle("ShoulderMotor#" + str(num))
 
     return item[0], wrist, elbow, shoulder
 
-
+def move_motor(motor, angle):
+    vrep.simxSetJointTargetPosition(0, motor, math.radians(angle), vrep.simx_opmode_oneshot)
